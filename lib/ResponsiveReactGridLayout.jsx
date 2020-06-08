@@ -15,7 +15,7 @@ import {
   getColsFromBreakpoint,
   findOrGenerateResponsiveLayout,
   type ResponsiveLayout,
-  type Breakpoints,
+  type Breakpoints
 } from "./responsiveUtils";
 import ReactGridLayout from "./ReactGridLayout";
 
@@ -320,6 +320,7 @@ export default class ResponsiveReactGridLayout extends React.Component<
         onLayoutChange={this.onLayoutChange}
         layout={this.state.layout}
         cols={this.state.cols}
+        onClick={() => {}}
       />
     );
   }

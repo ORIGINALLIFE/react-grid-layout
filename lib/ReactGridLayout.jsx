@@ -13,6 +13,7 @@ import {
   moveElement,
   synchronizeLayoutWithChildren,
   getAllCollisions,
+  getFirstCollision,
   compactType,
   noop,
   fastRGLPropsEqual
@@ -52,7 +53,8 @@ type State = {
   // Mirrored props
   children: ReactChildrenArray<ReactElement<any>>,
   compactType?: CompactType,
-  propsLayout?: Layout
+  propsLayout?: Layout,
+  pureClick: boolean
 };
 
 import type { Props } from "./ReactGridLayoutPropTypes";
@@ -128,7 +130,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     oldLayout: null,
     oldResizeItem: null,
     droppingDOMNode: null,
-    children: []
+    children: [],
+    pureClick: false
   };
 
   dragEnterCounter = 0;
@@ -141,7 +144,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       "onDragStop",
       "onResizeStart",
       "onResize",
-      "onResizeStop"
+      "onResizeStop",
+      "onClick"
     ]);
   }
 
@@ -700,6 +704,9 @@ export default class ReactGridLayout extends React.Component<Props, State> {
         onDragLeave={isDroppable ? this.onDragLeave : noop}
         onDragEnter={isDroppable ? this.onDragEnter : noop}
         onDragOver={isDroppable ? this.onDragOver : noop}
+        onClick={this.onClick ? this.onClick : noop}
+        onMouseDown={() => this.setState({ pureClick: true })}
+        onMouseMove={() => this.setState({ pureClick: false })}
       >
         {React.Children.map(this.props.children, child =>
           this.processGridItem(child)
@@ -711,4 +718,45 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       </div>
     );
   }
+
+  // Called while dragging an element. Part of browser native drag/drop API.
+  // Native event target might be the layout itself, or an element within the layout.
+  onClick = (e: DragOverEvent) => {
+    if (!this.state.pureClick) return;
+    const {
+      droppingItem,
+      margin,
+      cols,
+      rowHeight,
+      maxRows,
+      width,
+      containerPadding
+    } = this.props;
+    const { layout } = this.state;
+    // This is relative to the DOM element that this event fired for.
+    const { layerX, layerY } = e.nativeEvent;
+    const droppingPosition = { left: layerX, top: layerY, e };
+
+    if (!this.state.droppingDOMNode) {
+      const positionParams: PositionParams = {
+        cols,
+        margin,
+        maxRows,
+        rowHeight,
+        containerWidth: width,
+        containerPadding: containerPadding || margin
+      };
+
+      const { x, y } = calcXY(
+        positionParams,
+        layerY,
+        layerX,
+        droppingItem.w,
+        droppingItem.h
+      );
+
+      const item = getFirstCollision(layout, { i: "tmp", x, y, w: 1, h: 1 });
+      this.props.onClick && this.props.onClick({ x, y, e, item });
+    }
+  };
 }
