@@ -106,6 +106,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       h: 1,
       w: 1
     },
+    resizeHandles: ["se"],
     onLayoutChange: noop,
     onDragStart: noop,
     onDrag: noop,
@@ -513,7 +514,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       useCSSTransforms,
       transformScale,
       draggableCancel,
-      draggableHandle
+      draggableHandle,
+      resizeHandles
     } = this.props;
     const { mounted, droppingPosition } = this.state;
 
@@ -528,6 +530,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       typeof l.isResizable === "boolean"
         ? l.isResizable
         : !l.static && isResizable;
+    const resizeHandlesOptions = l.resizeHandles || resizeHandles;
 
     return (
       <GridItem
@@ -561,6 +564,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
         maxW={l.maxW}
         static={l.static}
         droppingPosition={isDroppingItem ? droppingPosition : undefined}
+        resizeHandles={resizeHandlesOptions}
       >
         {child}
       </GridItem>
