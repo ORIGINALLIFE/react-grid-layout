@@ -1,12 +1,6 @@
 node_modules
-dist/*
-!dist/react-grid-layout.min*
-!dist/*.html
+dist
 npm-debug.log
-build/
 .idea
 # Ignore built example files
-examples/*.html
-examples/*.js
-!examples/generate.js
-!examples/vars.js
+examples
