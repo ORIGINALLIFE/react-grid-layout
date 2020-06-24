@@ -259,9 +259,13 @@ var ReactGridLayout = /*#__PURE__*/function (_React$Component) {
       var _e$nativeEvent2 = e.nativeEvent,
           layerX = _e$nativeEvent2.layerX,
           layerY = _e$nativeEvent2.layerY;
+      var rect = (e.nativeEvent.target || e.nativeEvent.srcElement).getBoundingClientRect();
+      if (!_this.innerRef) return;
+      var coord = relMouseCoords(e.nativeEvent, _this.innerRef.current);
+      console.log("layer", layerX, layerY, coord);
       var droppingPosition = {
-        left: layerX,
-        top: layerY,
+        left: coord.x,
+        top: coord.y,
         e: e
       };
 
@@ -277,7 +281,7 @@ var ReactGridLayout = /*#__PURE__*/function (_React$Component) {
           containerPadding: containerPadding || margin
         };
 
-        var _calcXY = (0, _calculateUtils.calcXY)(positionParams, layerY, layerX, droppingItem.w, droppingItem.h),
+        var _calcXY = (0, _calculateUtils.calcXY)(positionParams, coord.y, coord.x, droppingItem.w, droppingItem.h),
             x = _calcXY.x,
             y = _calcXY.y;
 
@@ -298,6 +302,7 @@ var ReactGridLayout = /*#__PURE__*/function (_React$Component) {
     });
 
     (0, _utils.autoBindHandlers)(_assertThisInitialized(_this), ["onDragStart", "onDrag", "onDragStop", "onResizeStart", "onResize", "onResizeStop", "onClick"]);
+    _this.innerRef = /*#__PURE__*/_react.default.createRef();
     return _this;
   }
 
@@ -721,8 +726,7 @@ var ReactGridLayout = /*#__PURE__*/function (_React$Component) {
       var _this$props8 = this.props,
           className = _this$props8.className,
           style = _this$props8.style,
-          isDroppable = _this$props8.isDroppable,
-          innerRef = _this$props8.innerRef;
+          isDroppable = _this$props8.isDroppable;
       var mergedClassName = (0, _classnames.default)(layoutClassName, className);
 
       var mergedStyle = _objectSpread({
@@ -730,7 +734,7 @@ var ReactGridLayout = /*#__PURE__*/function (_React$Component) {
       }, style);
 
       return /*#__PURE__*/_react.default.createElement("div", {
-        ref: innerRef,
+        ref: this.innerRef,
         className: mergedClassName,
         style: mergedStyle,
         onDrop: isDroppable ? this.onDrop : _utils.noop,
@@ -840,3 +844,22 @@ _defineProperty(ReactGridLayout, "defaultProps", {
   onResizeStop: _utils.noop,
   onDrop: _utils.noop
 });
+
+function relMouseCoords(event, currentElement) {
+  var totalOffsetX = 0;
+  var totalOffsetY = 0;
+  var x = 0;
+  var y = 0;
+
+  do {
+    totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+    totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+  } while (currentElement = currentElement.offsetParent);
+
+  x = event.pageX - totalOffsetX;
+  y = event.pageY - totalOffsetY;
+  return {
+    x: x,
+    y: y
+  };
+}

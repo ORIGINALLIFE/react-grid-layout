@@ -148,6 +148,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       "onResizeStop",
       "onClick"
     ]);
+    this.innerRef = React.createRef();
   }
 
   componentDidMount() {
@@ -691,7 +692,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
   };
 
   render() {
-    const { className, style, isDroppable, innerRef } = this.props;
+    const { className, style, isDroppable } = this.props;
 
     const mergedClassName = classNames(layoutClassName, className);
     const mergedStyle = {
@@ -701,7 +702,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
 
     return (
       <div
-        ref={innerRef}
+        ref={this.innerRef}
         className={mergedClassName}
         style={mergedStyle}
         onDrop={isDroppable ? this.onDrop : noop}
@@ -739,7 +740,13 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     const { layout } = this.state;
     // This is relative to the DOM element that this event fired for.
     const { layerX, layerY } = e.nativeEvent;
-    const droppingPosition = { left: layerX, top: layerY, e };
+    const rect = (
+      e.nativeEvent.target || e.nativeEvent.srcElement
+    ).getBoundingClientRect();
+    if (!this.innerRef) return;
+    const coord = relMouseCoords(e.nativeEvent, this.innerRef.current);
+    console.log("layer", layerX, layerY, coord);
+    const droppingPosition = { left: coord.x, top: coord.y, e };
 
     if (!this.state.droppingDOMNode) {
       const positionParams: PositionParams = {
@@ -753,8 +760,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
 
       const { x, y } = calcXY(
         positionParams,
-        layerY,
-        layerX,
+        coord.y,
+        coord.x,
         droppingItem.w,
         droppingItem.h
       );
@@ -763,4 +770,21 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       this.props.onClick && this.props.onClick({ x, y, e, item });
     }
   };
+}
+
+function relMouseCoords(event, currentElement) {
+  var totalOffsetX = 0;
+  var totalOffsetY = 0;
+  var x = 0;
+  var y = 0;
+
+  do {
+    totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+    totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+  } while ((currentElement = currentElement.offsetParent));
+
+  x = event.pageX - totalOffsetX;
+  y = event.pageY - totalOffsetY;
+
+  return { x, y };
 }
