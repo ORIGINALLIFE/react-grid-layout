@@ -739,14 +739,19 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     } = this.props;
     const { layout } = this.state;
     // This is relative to the DOM element that this event fired for.
-    const { layerX, layerY } = e.nativeEvent;
-    const rect = (
-      e.nativeEvent.target || e.nativeEvent.srcElement
-    ).getBoundingClientRect();
+    let grid = e.nativeEvent.target || e.nativeEvent.srcElement;
+    while (!grid || grid.className.indexOf("react-grid-layout") < 0) {
+      grid = grid.offsetParent;
+    }
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
     if (!this.innerRef) return;
-    const coord = relMouseCoords(e.nativeEvent, this.innerRef.current);
-    console.log("layer", layerX, layerY, coord);
-    const droppingPosition = { left: coord.x, top: coord.y, e };
+    // 謎の調整(calcXYはmargin/paddingを考慮しているとして謎)
+    const xmargin = 15;
+    const coord = {
+      x: e.clientX - rect.left - xmargin,
+      y: e.clientY - rect.top - xmargin
+    };
 
     if (!this.state.droppingDOMNode) {
       const positionParams: PositionParams = {
@@ -766,25 +771,21 @@ export default class ReactGridLayout extends React.Component<Props, State> {
         droppingItem.h
       );
 
-      const item = getFirstCollision(layout, { i: "tmp", x, y, w: 1, h: 1 });
+      // console.log(
+      //   "layer",
+      //   coord,
+      //   this.innerRef.current,
+      //   this.innerRef.current.offsetParent,
+      //   e.nativeEvent.target || e.nativeEvent.srcElement,
+      //   rect,
+      //   e.clientX,
+      //   e.clientY,
+      //   x,
+      //   y
+      // );
+
+      const item = getFirstCollision(layout, { i: "__tmp", x, y, w: 1, h: 1 });
       this.props.onClick && this.props.onClick({ x, y, e, item });
     }
   };
-}
-
-function relMouseCoords(event, currentElement) {
-  var totalOffsetX = 0;
-  var totalOffsetY = 0;
-  var x = 0;
-  var y = 0;
-
-  do {
-    totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-    totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-  } while ((currentElement = currentElement.offsetParent));
-
-  x = event.pageX - totalOffsetX;
-  y = event.pageY - totalOffsetY;
-
-  return { x, y };
 }
