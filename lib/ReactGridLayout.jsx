@@ -747,7 +747,8 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     const rect = grid.getBoundingClientRect();
     if (!this.innerRef) return;
     // 謎の調整(calcXYはmargin/paddingを考慮しているとして謎)
-    const xmargin = 15;
+    const xmargin = this.props.tmpXMargin || 0;
+    const ymargin = this.props.tmpYMargin || 0;
     const coord = {
       x: e.clientX - rect.left - xmargin,
       y: e.clientY - rect.top - xmargin

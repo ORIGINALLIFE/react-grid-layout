@@ -463,7 +463,8 @@ var ReactGridLayout = /*#__PURE__*/ (function(_React$Component) {
       var rect = grid.getBoundingClientRect();
       if (!_this.innerRef) return; // 謎の調整(calcXYはmargin/paddingを考慮しているとして謎)
 
-      var xmargin = 15;
+      var xmargin = _this.props.tmpXMargin || 0;
+      var ymargin = _this.props.tmpYMargin || 0;
       var coord = {
         x: e.clientX - rect.left - xmargin,
         y: e.clientY - rect.top - xmargin
