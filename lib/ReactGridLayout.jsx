@@ -751,7 +751,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     const ymargin = this.props.tmpYMargin || 0;
     const coord = {
       x: e.clientX - rect.left - xmargin,
-      y: e.clientY - rect.top - xmargin
+      y: e.clientY - rect.top - ymargin
     };
 
     if (!this.state.droppingDOMNode) {
